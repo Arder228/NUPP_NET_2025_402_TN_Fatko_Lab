@@ -1,66 +1,73 @@
 ﻿using System;
-using ComputerSystem.Common;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using ComputerSystem.Common; //
 
-namespace ComputerSystem.ConsoleApp
+class Program
 {
-    class Program
+    static async Task Main(string[] args)
     {
-        static void Main(string[] args)
+        Console.WriteLine("=== Паралельна обробка компонентів ===");
+
+        string filePath = "processors.json";
+        var crud = new GenericCrudServiceAsync<Processor>(filePath);
+
+        object lockObj = new();
+        var semaphore = new SemaphoreSlim(4);
+
+        var random = new Random();
+        var processors = Enumerable.Range(0, 5000)
+            .Select(_ => new Processor
+            {
+                Id = Guid.NewGuid(),
+                Model = $"CPU-{random.Next(1000, 9999)}",
+                Manufacturer = random.Next(2) == 0 ? "Intel" : "AMD",
+                Cores = random.Next(2, 16),
+                FrequencyGHz = Math.Round(random.NextDouble() * 3 + 1.5, 2)
+            })
+            .ToList();
+
+        Console.WriteLine("Створення процесорів у паралельних потоках...");
+
+        await Task.Run(() =>
         {
-            // dикористовуємо GenericCrudService
-            var crudService = new GenericCrudService<Component>();
-
-            // cтворюємо кілька об’єктів
-            var cpu = new Processor("Ryzen 7 7800X3D", "AMD", 8, 4.2, 5.0);
-            var gpu = new GraphicsCard("RTX 4080", "NVIDIA", 16, 2.6);
-            var ram = new Memory("Kingston Fury", "Kingston", 32, "DDR5");
-
-            crudService.Create(cpu);
-            crudService.Create(gpu);
-            crudService.Create(ram);
-
-            Console.WriteLine("\n--- Всі додані елементи ---");
-            foreach (var item in crudService.ReadAll())
+            Parallel.ForEach(processors, async processor =>
             {
-                Console.WriteLine(item.GetInfo());
-            }
+                await semaphore.WaitAsync();
+                try
+                {
+                    lock (lockObj)
+                    {
+                        crud.CreateAsync(processor).Wait();
+                    }
+                }
+                finally
+                {
+                    semaphore.Release();
+                }
+            });
+        });
 
-            // демонстрація Update
-            cpu.Overclock(5.1);
-            crudService.Update(cpu);
+        Console.WriteLine("Усі 5000 процесорів створено.\n");
 
-            Console.WriteLine("\n--- Після оновлення CPU ---");
-            Console.WriteLine(crudService.Read(cpu.Id).GetInfo());
+        var all = await crud.ReadAllAsync();
 
-            // Remove
-            crudService.Remove(ram);
+        double avgFreq = all.Average(p => p.FrequencyGHz);
+        double minFreq = all.Min(p => p.FrequencyGHz);
+        double maxFreq = all.Max(p => p.FrequencyGHz);
 
-            Console.WriteLine("\n--- Після видалення RAM ---");
-            foreach (var item in crudService.ReadAll())
-            {
-                Console.WriteLine(item.GetInfo());
-            }
+        Console.WriteLine($"Статистика процесорів:");
+        Console.WriteLine($"Мінімальна частота: {minFreq:F2} GHz");
+        Console.WriteLine($"Максимальна частота: {maxFreq:F2} GHz");
+        Console.WriteLine($"Середня частота: {avgFreq:F2} GHz\n");
 
-            // статичний метод
-            Console.WriteLine("\nКількість створених компонентів: " + Component.GetCreatedCount());
+        if (await crud.SaveAsync())
+            Console.WriteLine($"Дані збережено у файл: {filePath}");
+        else
+            Console.WriteLine("Помилка збереження даних.");
 
-            // метод-розширення
-            Console.WriteLine("\nGPU опис (метод-розширення): " + gpu.ToShortString());
-
-            // збереження / завантаження
-            const string filePath = "components.json";
-            crudService.Save(filePath);
-            Console.WriteLine($"\nДані збережено у {filePath}");
-
-            var newCrudService = new GenericCrudService<Component>();
-            newCrudService.Load(filePath);
-            Console.WriteLine("\n--- Завантажені з файлу дані ---");
-            foreach (var item in newCrudService.ReadAll())
-            {
-                Console.WriteLine(item.GetInfo());
-            }
-
-            Console.WriteLine("\n--- Кінець демонстрації ---");
-        }
+        Console.WriteLine("\nНатисніть Enter для завершення...");
+        Console.ReadLine();
     }
 }

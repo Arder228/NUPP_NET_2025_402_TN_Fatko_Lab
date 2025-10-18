@@ -4,7 +4,7 @@ namespace ComputerSystem.Common
 {
     public class Cooling : Component
     {
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
         public int FanCount { get; set; }
         public double MaxTdpWatts { get; set; }
 
@@ -17,6 +17,9 @@ namespace ComputerSystem.Common
         }
 
         public Cooling() { }
+
+        public Cooling(string model, string manufacturer, string type)
+            : this(model, manufacturer, type, 1, 150) { }
 
         public override string GetInfo()
         {

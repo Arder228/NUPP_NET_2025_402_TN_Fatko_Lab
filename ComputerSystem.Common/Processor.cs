@@ -10,7 +10,7 @@ namespace ComputerSystem.Common
         public double FrequencyGHz { get; set; }
 
         public delegate void OverclockedHandler(object sender, OverclockEventArgs e);
-        public event OverclockedHandler Overclocked;
+        public event OverclockedHandler? Overclocked;
 
         public Processor(string model, string manufacturer, int cores, double baseFreq, double boostFreq)
             : base(model, manufacturer)
@@ -18,7 +18,12 @@ namespace ComputerSystem.Common
             Cores = cores;
             BaseFrequencyGhz = baseFreq;
             BoostFrequencyGhz = boostFreq;
+            FrequencyGHz = baseFreq;
         }
+
+        // Overload constructor for backward compatibility
+        public Processor(string model, string manufacturer, int cores, double frequency)
+            : this(model, manufacturer, cores, frequency, frequency + 1.0) { }
 
         public Processor() { }
 
@@ -27,6 +32,7 @@ namespace ComputerSystem.Common
             if (newFreqGhz > BoostFrequencyGhz)
             {
                 BoostFrequencyGhz = newFreqGhz;
+                FrequencyGHz = newFreqGhz;
                 Overclocked?.Invoke(this, new OverclockEventArgs(newFreqGhz));
             }
         }
