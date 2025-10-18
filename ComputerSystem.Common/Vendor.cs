@@ -5,8 +5,8 @@ namespace ComputerSystem.Common
     public class Vendor
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
-        public string Country { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
 
         public Vendor(string name, string country)
         {
@@ -15,6 +15,9 @@ namespace ComputerSystem.Common
             Country = country;
         }
 
-        public Vendor() { }
+        public Vendor() 
+        {
+            Id = Guid.NewGuid();
+        }
     }
 }

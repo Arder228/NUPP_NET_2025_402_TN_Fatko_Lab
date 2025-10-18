@@ -1,6 +1,8 @@
+using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace ComputerSystem.Common
 {
@@ -8,28 +10,40 @@ namespace ComputerSystem.Common
     {
         private static JsonSerializerOptions GetOptions()
         {
-            return new JsonSerializerOptions 
-            { 
+            var o = new JsonSerializerOptions
+            {
                 WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                Converters = { new JsonStringEnumConverter() }
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
+            o.Converters.Add(new JsonStringEnumConverter());
+            return o;
         }
 
-        public static void SaveToFile<T>(T obj, string path)
+        public static async Task SaveToFileAsync<T>(T obj, string path)
         {
             var options = GetOptions();
             var json = JsonSerializer.Serialize(obj, options);
-            File.WriteAllText(path, json);
+            var directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            await File.WriteAllTextAsync(path, json).ConfigureAwait(false);
         }
 
-        public static T LoadFromFile<T>(string path)
+        public static async Task<T?> LoadFromFileAsync<T>(string path)
         {
-            if (!File.Exists(path)) return default(T);
-            
+            if (!File.Exists(path))
+                return default;
+
             var options = GetOptions();
-            var json = File.ReadAllText(path);
+            var json = await File.ReadAllTextAsync(path).ConfigureAwait(false);
             return JsonSerializer.Deserialize<T>(json, options);
         }
+
+        public static void SaveToFile<T>(T obj, string path) =>
+            SaveToFileAsync(obj, path).GetAwaiter().GetResult();
+
+        public static T? LoadFromFile<T>(string path) =>
+            LoadFromFileAsync<T>(path).GetAwaiter().GetResult();
     }
 }
