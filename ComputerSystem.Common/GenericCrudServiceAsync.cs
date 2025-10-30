@@ -26,7 +26,7 @@ namespace ComputerSystem.Common
             if (prop == null)
                 throw new InvalidOperationException("T must have an Id property of type Guid");
 
-            var value = prop.GetValue(element);
+            var value = prop.GetValue(element) ?? throw new InvalidOperationException("Id property is null");
             if (value is Guid id)
                 return id;
 
@@ -43,6 +43,13 @@ namespace ComputerSystem.Common
         {
             _storage.TryGetValue(id, out var value);
             return Task.FromResult(value);
+        }
+
+        Task<T?> ICrudServiceAsync<T>.ReadAsync(object id)
+        {
+            if (id is Guid guid)
+                return ReadAsync(guid);
+            throw new ArgumentException("Id must be a Guid", nameof(id));
         }
 
         public Task<IEnumerable<T>> ReadAllAsync()
