@@ -24,25 +24,7 @@ namespace ComputerSystem.Infrastructure.Services
 
         public async Task<T?> ReadAsync(object id)
         {
-            var byId = await _repo.GetByIdAsync(id);
-            if (byId != null) return byId;
-
-            if (id is Guid guid)
-            {
-                var stringId = guid.ToString();
-                var alt = await _repo.GetByIdAsync(stringId);
-                if (alt != null) return alt;
-            }
-            else
-            {
-                if (int.TryParse(id?.ToString(), out var i))
-                {
-                    var alt = await _repo.GetByIdAsync(i);
-                    if (alt != null) return alt;
-                }
-            }
-
-            return null;
+            return await _repo.GetByIdAsync(id);
         }
 
         public async Task<IEnumerable<T>> ReadAllAsync()

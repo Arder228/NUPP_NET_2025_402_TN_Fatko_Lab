@@ -44,8 +44,7 @@ namespace ComputerSystem.Infrastructure.Repositories
 
         public async Task<T?> GetByIdAsync(object id)
         {
-            var found = await _dbSet.FindAsync(new object[] { id });
-            return found;
+            return await _dbSet.FindAsync(id);
         }
 
         public async Task UpdateAsync(T entity)

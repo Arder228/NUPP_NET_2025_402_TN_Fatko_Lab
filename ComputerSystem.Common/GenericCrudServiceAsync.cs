@@ -39,17 +39,14 @@ namespace ComputerSystem.Common
             return Task.FromResult(_storage.TryAdd(id, element));
         }
 
-        public Task<T?> ReadAsync(Guid id)
-        {
-            _storage.TryGetValue(id, out var value);
-            return Task.FromResult(value);
-        }
-
-        Task<T?> ICrudServiceAsync<T>.ReadAsync(object id)
+        public Task<T?> ReadAsync(object id)
         {
             if (id is Guid guid)
-                return ReadAsync(guid);
-            throw new ArgumentException("Id must be a Guid", nameof(id));
+            {
+                _storage.TryGetValue(guid, out var value);
+                return Task.FromResult(value);
+            }
+            return Task.FromResult<T?>(null);
         }
 
         public Task<IEnumerable<T>> ReadAllAsync()
