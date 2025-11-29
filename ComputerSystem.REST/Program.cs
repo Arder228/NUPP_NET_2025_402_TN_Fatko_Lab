@@ -12,6 +12,9 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.Password.RequireDigit = false;
@@ -20,7 +23,6 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 4;
     options.Password.RequiredUniqueChars = 1;
-
     options.User.RequireUniqueEmail = false;
 })
 .AddEntityFrameworkStores<ComputerSystemContext>()
@@ -117,7 +119,6 @@ async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
-    // Створюємо ролі
     string[] roleNames = { "Admin", "Librarian", "User" };
     foreach (var roleName in roleNames)
     {
