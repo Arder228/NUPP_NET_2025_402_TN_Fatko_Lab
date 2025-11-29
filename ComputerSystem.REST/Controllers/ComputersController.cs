@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ComputerSystem.Common;
 using ComputerSystem.Infrastructure.Models;
 using ComputerSystem.REST.Models;
@@ -58,6 +59,7 @@ namespace ComputerSystem.REST.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "User,Librarian,Admin")]
         public async Task<ActionResult<ComputerDto>> CreateComputer(CreateComputerRequest request)
         {
             try
@@ -87,6 +89,7 @@ namespace ComputerSystem.REST.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Librarian,Admin")]
         public async Task<IActionResult> UpdateComputer(int id, UpdateComputerRequest request)
         {
             try
@@ -117,6 +120,7 @@ namespace ComputerSystem.REST.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteComputer(int id)
         {
             try
@@ -155,21 +159,6 @@ namespace ComputerSystem.REST.Controllers
             };
         }
 				
-				private ComponentDto CreateBaseComponentDto(ComponentModel component)
-				{
-						return new MemoryDto
-						{
-								Id = component.Id,
-								Uid = component.Uid,
-								Model = component.Model,
-								Manufacturer = component.Manufacturer,
-								VendorId = component.VendorId,
-								VendorName = component.Vendor?.Name,
-								SizeGB = 0,
-								Type = "Unknown"
-						};
-				}
-
         private ComponentDto MapToDto(ComponentModel component)
         {
             return component switch
@@ -244,6 +233,21 @@ namespace ComputerSystem.REST.Controllers
                     VendorName = psu.Vendor?.Name
                 },
                 _ => CreateBaseComponentDto(component)
+            };
+        }
+
+        private ComponentDto CreateBaseComponentDto(ComponentModel component)
+        {
+            return new MemoryDto
+            {
+                Id = component.Id,
+                Uid = component.Uid,
+                Model = component.Model,
+                Manufacturer = component.Manufacturer,
+                VendorId = component.VendorId,
+                VendorName = component.Vendor?.Name,
+                SizeGB = 0,
+                Type = "Unknown"
             };
         }
     }
