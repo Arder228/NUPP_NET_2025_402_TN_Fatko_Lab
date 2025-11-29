@@ -8,4 +8,4 @@ commands = [
 ]
 
 [start]
-cmd = "cd out && ./ComputerSystem.REST --urls http://0.0.0.0:$PORT"
+cmd = "cd out && dotnet ComputerSystem.REST.dll --urls http://0.0.0.0:$PORT"
