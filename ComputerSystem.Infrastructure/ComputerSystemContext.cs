@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ComputerSystem.Infrastructure.Identity;
 using ComputerSystem.Infrastructure.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ComputerSystem.Infrastructure
 {
-    public class ComputerSystemContext : DbContext
+    public class ComputerSystemContext : IdentityDbContext<User>
     {
         public ComputerSystemContext(DbContextOptions<ComputerSystemContext> opts) : base(opts) { }
 

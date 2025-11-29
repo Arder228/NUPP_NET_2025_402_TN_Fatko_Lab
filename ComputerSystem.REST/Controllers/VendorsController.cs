@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using ComputerSystem.Common;
 using ComputerSystem.Infrastructure.Models;
 using ComputerSystem.REST.Models;
@@ -57,6 +58,7 @@ namespace ComputerSystem.REST.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Librarian,Admin")]
         public async Task<ActionResult<VendorDto>> CreateVendor(CreateVendorRequest request)
         {
             try
@@ -86,6 +88,7 @@ namespace ComputerSystem.REST.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Librarian,Admin")]
         public async Task<IActionResult> UpdateVendor(int id, UpdateVendorRequest request)
         {
             try
@@ -117,6 +120,7 @@ namespace ComputerSystem.REST.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteVendor(int id)
         {
             try
