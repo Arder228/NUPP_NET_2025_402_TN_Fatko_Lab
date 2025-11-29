@@ -91,17 +91,27 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(c => 
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ComputerSystem API v1");
+    c.RoutePrefix = string.Empty;
+});
 
+app.UseCors(policy => policy
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
 
-app.UseHttpsRedirection();
-
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapGet("/", () => "ComputerSystem API is running!");
+app.MapGet("/health", () => "Healthy");
+app.MapGet("/api", () => "ComputerSystem API is running!");
 
 using (var scope = app.Services.CreateScope())
 {
