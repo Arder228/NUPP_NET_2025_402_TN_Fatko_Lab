@@ -1,8 +1,0 @@
-{
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "cd ComputerSystem.REST && dotnet ComputerSystem.REST.dll --urls http://0.0.0.0:$PORT"
-  }
-}
